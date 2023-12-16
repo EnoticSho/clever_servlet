@@ -1,0 +1,7 @@
+db :
+  dbUsername: root
+  dbPassword: root
+  dbUrl: jdbc:postgresql://localhost:5432/database
+cache :
+  capacity: 5
+  type: lfu
