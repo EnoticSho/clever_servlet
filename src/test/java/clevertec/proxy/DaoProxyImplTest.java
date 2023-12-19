@@ -87,7 +87,7 @@ public class DaoProxyImplTest {
                         .build()
                         .buildProduct()
         );
-        when(productDao.findALL(10, 1))
+        when(productDao.findAll(10, 1))
                 .thenReturn(expectedProducts);
 
         // When
@@ -100,7 +100,7 @@ public class DaoProxyImplTest {
     @Test
     void ShouldReturnEmptyListWhenNoProductsAreAvailable() {
         // Given
-        when(productDao.findALL(10, 1))
+        when(productDao.findAll(10, 1))
                 .thenReturn(Collections.emptyList());
 
         // When
@@ -120,7 +120,7 @@ public class DaoProxyImplTest {
                 .thenReturn(product);
 
         // When
-        Product savedProduct = daoProxy.saveProduct(product);
+        Product savedProduct = daoProxy.save(product);
 
         // Then
         verify(cache)

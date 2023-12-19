@@ -9,7 +9,7 @@ import java.util.UUID;
 public interface ProductDao {
     Optional<Product> findById(UUID uuid);
 
-    List<Product> findALL(int pageSize, int pageNumber);
+    List<Product> findAll(int pageSize, int pageNumber);
 
     Product save(Product product);
 

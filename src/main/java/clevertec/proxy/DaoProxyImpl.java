@@ -3,9 +3,11 @@ package clevertec.proxy;
 import clevertec.cache.Cache;
 import clevertec.cache.impl.LfuCache;
 import clevertec.cache.impl.LruCache;
+import clevertec.config.ConfigUtils;
 import clevertec.config.ConfigurationLoader;
 import clevertec.dao.ProductDao;
 import clevertec.entity.Product;
+import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -19,6 +21,9 @@ import java.util.UUID;
  */
 @Slf4j
 public class DaoProxyImpl {
+    private static final String CACHE_KEY = "cache";
+    private static final String CACHE_CAPACITY = "capacity";
+    private static final String CACHE_TYPE = "type";
     private final ProductDao productDao;
     private final Cache<UUID, Product> cache;
 
@@ -51,9 +56,9 @@ public class DaoProxyImpl {
     private Cache<UUID, Product> cacheInit() {
         try {
             Map<String, Object> objectMap = ConfigurationLoader.loadConfig();
-            Map<String, Object> cacheConfig = (Map<String, Object>) objectMap.get("cache");
-            int capacity = (Integer) cacheConfig.get("capacity");
-            String cacheType = (String) cacheConfig.get("type");
+            Map<String, Object> cacheConfig = ConfigUtils.safelyCastToMap(objectMap.get(CACHE_KEY));
+            int capacity = (Integer) cacheConfig.get(CACHE_CAPACITY);
+            String cacheType = (String) cacheConfig.get(CACHE_TYPE);
             return createCache(cacheType, capacity);
         } catch (IOException e) {
             log.error("Error initializing cache", e);
@@ -92,7 +97,7 @@ public class DaoProxyImpl {
      * @return Список продуктов
      */
     public List<Product> getAllProducts(int pageSize, int pageNumber) {
-        return productDao.findALL(pageSize, pageNumber);
+        return productDao.findAll(pageSize, pageNumber);
     }
 
     /**
@@ -101,7 +106,7 @@ public class DaoProxyImpl {
      * @param product Продукт для сохранения
      * @return Сохраненный продукт
      */
-    public Product saveProduct(Product product) {
+    public Product save(Product product) {
         Product save = productDao.save(product);
         cache.put(product.getId(), save);
         return save;

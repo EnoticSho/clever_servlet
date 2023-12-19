@@ -115,7 +115,7 @@ public class ProductServiceImplTest {
         when(productMapper.toProduct(productDto))
                 .thenReturn(product);
 
-        when(daoProxy.saveProduct(product))
+        when(daoProxy.save(product))
                 .thenReturn(product);
 
         //When
@@ -126,7 +126,7 @@ public class ProductServiceImplTest {
         verify(productMapper)
                 .toProduct(productDto);
         verify(daoProxy)
-                .saveProduct(product);
+                .save(product);
     }
 
     @Test

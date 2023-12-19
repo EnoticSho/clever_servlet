@@ -12,6 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InfoProductDto {
+
     private UUID id;
     private String name;
     private Double price;

@@ -3,6 +3,8 @@ package clevertec.dao.impl;
 import clevertec.dao.ProductDao;
 import clevertec.dbConnection.DatabaseConnectionManager;
 import clevertec.entity.Product;
+import clevertec.exception.DatabaseAccessException;
+import clevertec.exception.ProductNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.Connection;
@@ -16,26 +18,28 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Реализация DAO (Data Access Object) для работы с продуктами в базе данных.
+ * Реализация интерфейса {@link ProductDao} для взаимодействия с продуктами в базе данных.
+ * Предоставляет методы для поиска, сохранения, обновления и удаления продуктов.
  */
 @Slf4j
 public class ProductDaoImpl implements ProductDao {
 
+    private static final String FIND_BY_ID_QUERY = "SELECT * FROM products WHERE id = ?";
+    private static final String FIND_ALL_QUERY = "SELECT * FROM products LIMIT ? OFFSET ?";
+    private static final String SAVE_QUERY = "INSERT INTO products (id, name, price, weight, creation_date) VALUES (?, ?, ?, ?, ?)";
+    private static final String UPDATE_QUERY = "UPDATE products SET name = ?, price = ?, weight = ?, creation_date = ? WHERE id = ?";
+    private static final String DELETE_QUERY = "DELETE FROM products WHERE id = ?";
+
     /**
-     * Ищет продукт по его идентификатору.
+     * Ищет продукт в базе данных по его уникальному идентификатору.
      *
-     * @param uuid Идентификатор продукта
-     * @return Опциональный объект продукта, если найден
+     * @param uuid Уникальный идентификатор продукта.
+     * @return Опциональный объект продукта. Если продукт не найден, возвращает пустой Optional.
      */
     @Override
     public Optional<Product> findById(UUID uuid) {
-        String query = """
-                SELECT *
-                FROM products
-                WHERE id = ?
-                """;
         try (Connection connection = DatabaseConnectionManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_ID_QUERY)) {
             preparedStatement.setObject(1, uuid);
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -45,38 +49,33 @@ public class ProductDaoImpl implements ProductDao {
             }
         } catch (SQLException e) {
             log.error("SQL exception in findById", e);
-            throw new RuntimeException("SQL exception occurred while finding product by id", e);
+            throw new DatabaseAccessException("SQL exception occurred while finding product by id", e);
         }
         return Optional.empty();
     }
 
     /**
-     * Получает список всех продуктов.
+     * Получает страницу списка продуктов из базы данных.
      *
-     * @return Список продуктов
+     * @param pageSize Размер страницы (количество продуктов на странице).
+     * @param pageNumber Номер страницы (начиная с 1).
+     * @return Список продуктов, соответствующий указанной странице.
      */
     @Override
-    public List<Product> findALL(int pageSize, int pageNumber) {
+    public List<Product> findAll(int pageSize, int pageNumber) {
         List<Product> productList = new ArrayList<>();
-        String query = """
-                SELECT *
-                FROM products
-                LIMIT ?
-                OFFSET ?
-                """;
         try (Connection connection = DatabaseConnectionManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(FIND_ALL_QUERY)) {
             preparedStatement.setInt(1, pageSize);
             preparedStatement.setInt(2, (pageNumber - 1) * pageSize);
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
-                    Optional<Product> product = Optional.of(buildProduct(resultSet));
-                    productList.add(product.get());
+                    productList.add(buildProduct(resultSet));
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new DatabaseAccessException("Error retrieving products", e);
         }
         return productList;
     }
@@ -89,21 +88,12 @@ public class ProductDaoImpl implements ProductDao {
      */
     @Override
     public Product save(Product product) {
-        String query = """
-                INSERT INTO products (id, name, price, weight, creation_date)
-                VALUES (?, ?, ?, ?, ?);
-                """;
-
         try (Connection connection = DatabaseConnectionManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setObject(1, product.getId());
-            preparedStatement.setString(2, product.getName());
-            preparedStatement.setDouble(3, product.getPrice());
-            preparedStatement.setDouble(4, product.getWeight());
-            preparedStatement.setTimestamp(5, Timestamp.valueOf(product.getCreated()));
+             PreparedStatement preparedStatement = connection.prepareStatement(SAVE_QUERY)) {
+            fillPreparedStatement(preparedStatement, product, false);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to save product", e);
+            throw new DatabaseAccessException("Failed to save product", e);
         }
         return product;
     }
@@ -116,22 +106,13 @@ public class ProductDaoImpl implements ProductDao {
      */
     @Override
     public Product update(Product product) {
-        String query = """
-                UPDATE products
-                SET name = ?, price = ?, weight = ?, creation_date = ?
-                WHERE id = ?;\
-                """;
-
         try (Connection connection = DatabaseConnectionManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setString(1, product.getName());
-            preparedStatement.setDouble(2, product.getPrice());
-            preparedStatement.setDouble(3, product.getWeight());
-            preparedStatement.setTimestamp(4, Timestamp.valueOf(product.getCreated()));
+             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_QUERY)) {
+            fillPreparedStatement(preparedStatement, product, true);
             preparedStatement.setObject(5, product.getId());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to update product", e);
+            throw new DatabaseAccessException("Failed to update product", e);
         }
         return product;
     }
@@ -143,21 +124,15 @@ public class ProductDaoImpl implements ProductDao {
      */
     @Override
     public void delete(UUID uuid) {
-        String query = """
-                DELETE
-                FROM products
-                WHERE id = ?
-                """;
         try (Connection connection = DatabaseConnectionManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-
+             PreparedStatement preparedStatement = connection.prepareStatement(DELETE_QUERY)) {
             preparedStatement.setObject(1, uuid);
             int rowsAffected = preparedStatement.executeUpdate();
             if (rowsAffected < 1) {
-                throw new SQLException("Product not found for id: " + uuid);
+                throw new ProductNotFoundException(uuid);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error deleting product with id: " + uuid, e);
+            throw new DatabaseAccessException("Error deleting product with id: " + uuid, e);
         }
     }
 
@@ -169,5 +144,19 @@ public class ProductDaoImpl implements ProductDao {
                 .weight(resultSet.getDouble("weight"))
                 .created(resultSet.getTimestamp("creation_date").toLocalDateTime())
                 .build();
+    }
+
+    private void fillPreparedStatement(PreparedStatement preparedStatement, Product product, boolean isUpdate) throws SQLException {
+        preparedStatement.setString(1, product.getName());
+        preparedStatement.setDouble(2, product.getPrice());
+        preparedStatement.setDouble(3, product.getWeight());
+        preparedStatement.setTimestamp(4, Timestamp.valueOf(product.getCreated()));
+
+        if (isUpdate) {
+            preparedStatement.setObject(5, product.getId());
+        } else {
+            preparedStatement.setObject(5, Timestamp.valueOf(product.getCreated()));
+            preparedStatement.setObject(1, product.getId());
+        }
     }
 }
