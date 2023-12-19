@@ -11,12 +11,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.lang.reflect.Field;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class PdfSerializer {
 
-    public void serializeObjectToPdf(Object classObject) {
+    public Path serializeObjectToPdf(Object classObject) {
         String simpleName = classObject.getClass().getSimpleName();
         Document document = new Document();
         String pdfFilePath = createPdfFilePath(classObject.getClass().getSimpleName());
@@ -34,6 +35,7 @@ public class PdfSerializer {
         } finally {
             document.close();
         }
+        return Path.of(pdfFilePath);
     }
 
     private void addTitle(Document document, String titleText) throws DocumentException {

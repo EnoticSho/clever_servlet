@@ -1,9 +1,8 @@
 package clevertec.dao.impl;
 
-import clevertec.config.dbConnection.DatabaseConnectionManager;
 import clevertec.dao.ProductDao;
+import clevertec.dbConnection.DatabaseConnectionManager;
 import clevertec.entity.Product;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.Connection;
@@ -20,10 +19,7 @@ import java.util.UUID;
  * Реализация DAO (Data Access Object) для работы с продуктами в базе данных.
  */
 @Slf4j
-@RequiredArgsConstructor
 public class ProductDaoImpl implements ProductDao {
-
-    private final DatabaseConnectionManager databaseConnectionManager;
 
     /**
      * Ищет продукт по его идентификатору.
@@ -38,7 +34,7 @@ public class ProductDaoImpl implements ProductDao {
                 FROM products
                 WHERE id = ?
                 """;
-        try (Connection connection = databaseConnectionManager.getConnection();
+        try (Connection connection = DatabaseConnectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setObject(1, uuid);
 
@@ -60,14 +56,18 @@ public class ProductDaoImpl implements ProductDao {
      * @return Список продуктов
      */
     @Override
-    public List<Product> findALL() {
+    public List<Product> findALL(int pageSize, int pageNumber) {
         List<Product> productList = new ArrayList<>();
         String query = """
                 SELECT *
                 FROM products
+                LIMIT ?
+                OFFSET ?
                 """;
-        try (Connection connection = databaseConnectionManager.getConnection();
+        try (Connection connection = DatabaseConnectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, pageSize);
+            preparedStatement.setInt(2, (pageNumber - 1) * pageSize);
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
@@ -94,7 +94,7 @@ public class ProductDaoImpl implements ProductDao {
                 VALUES (?, ?, ?, ?, ?);
                 """;
 
-        try (Connection connection = databaseConnectionManager.getConnection();
+        try (Connection connection = DatabaseConnectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setObject(1, product.getId());
             preparedStatement.setString(2, product.getName());
@@ -122,7 +122,7 @@ public class ProductDaoImpl implements ProductDao {
                 WHERE id = ?;\
                 """;
 
-        try (Connection connection = databaseConnectionManager.getConnection();
+        try (Connection connection = DatabaseConnectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setString(1, product.getName());
             preparedStatement.setDouble(2, product.getPrice());
@@ -148,7 +148,7 @@ public class ProductDaoImpl implements ProductDao {
                 FROM products
                 WHERE id = ?
                 """;
-        try (Connection connection = databaseConnectionManager.getConnection();
+        try (Connection connection = DatabaseConnectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
             preparedStatement.setObject(1, uuid);

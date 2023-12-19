@@ -6,7 +6,6 @@ import clevertec.cache.impl.LruCache;
 import clevertec.config.ConfigurationLoader;
 import clevertec.dao.ProductDao;
 import clevertec.entity.Product;
-import clevertec.exception.ProductNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -37,7 +36,7 @@ public class DaoProxyImpl {
      * Конструктор DaoProxy.
      *
      * @param productDao DAO для работы с продуктами
-     * @param cache кэш для работы с продуктами
+     * @param cache      кэш для работы с продуктами
      */
     public DaoProxyImpl(ProductDao productDao, Cache<UUID, Product> cache) {
         this.productDao = productDao;
@@ -92,8 +91,8 @@ public class DaoProxyImpl {
      *
      * @return Список продуктов
      */
-    public List<Product> getAllProducts() {
-        return productDao.findALL();
+    public List<Product> getAllProducts(int pageSize, int pageNumber) {
+        return productDao.findALL(pageSize, pageNumber);
     }
 
     /**

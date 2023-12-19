@@ -1,3 +1,16 @@
+--liquibase formatted sql
+
+--changeset sergey:1
+CREATE TABLE products
+(
+    id            UUID PRIMARY KEY,
+    name          VARCHAR(255),
+    price         DOUBLE PRECISION,
+    weight        DOUBLE PRECISION,
+    creation_date TIMESTAMP
+);
+
+--changeset sergey:2
 INSERT INTO products (id, name, price, weight, creation_date)
 VALUES ('dcce95ba-46ea-4739-887b-1de051755ac7', 'ProductA', 428.26, 3.79, '2023-11-13 03:09:02'),
        ('1d9411b4-53cc-42fc-8eeb-ab5d4c3820ba', 'ProductB', 79.67, 8.84, '2023-11-13 03:09:02'),

@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'war'
 }
 
 group 'com.example'
@@ -11,16 +12,23 @@ repositories {
 
 dependencies {
     implementation 'org.projectlombok:lombok:1.18.26'
-    compileOnly 'org.projectlombok:lombok:1.18.30'
-    annotationProcessor 'org.projectlombok:lombok:1.18.30'
     implementation 'org.slf4j:slf4j-api:1.7.30'
-    runtimeOnly 'ch.qos.logback:logback-classic:1.2.9'
     implementation 'org.yaml:snakeyaml:2.0'
     implementation 'org.mapstruct:mapstruct:1.5.3.Final'
-    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.3.Final'
-    implementation("org.postgresql:postgresql:42.6.0")
+    implementation 'org.postgresql:postgresql:42.7.0'
     implementation 'javax.validation:validation-api:2.0.1.Final'
-    implementation 'com.itextpdf:itextpdf:5.5.13.3'
+    implementation 'com.itextpdf:itextpdf:5.5.13'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.1'
+    implementation 'org.liquibase:liquibase-core:4.25.0'
+
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
+    runtimeOnly 'ch.qos.logback:logback-classic:1.2.9'
+    providedCompile 'javax.servlet:javax.servlet-api:4.0.1'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.3.Final'
+
 
     testImplementation "org.mockito:mockito-junit-jupiter:5.6.0"
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'

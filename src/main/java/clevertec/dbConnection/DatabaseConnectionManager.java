@@ -1,6 +1,7 @@
-package clevertec.config.dbConnection;
+package clevertec.dbConnection;
 
 import clevertec.config.ConfigurationLoader;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -11,8 +12,9 @@ import java.util.Map;
 /**
  * Менеджер соединений с базой данных, обеспечивающий создание и поддержку соединений.
  */
+@Slf4j
 public class DatabaseConnectionManager {
-    private Connection connection;
+    private static Connection connection;
 
     /**
      * Получает соединение с базой данных. Если текущее соединение отсутствует или закрыто,
@@ -21,7 +23,7 @@ public class DatabaseConnectionManager {
      * @return Активное соединение с базой данных
      * @throws SQLException если происходит ошибка SQL или соединение невозможно установить
      */
-    public Connection getConnection() throws SQLException {
+    public static Connection getConnection() throws SQLException {
         if (connection == null || connection.isClosed()) {
             try {
                 Map<String, Object> config = ConfigurationLoader.loadConfig();

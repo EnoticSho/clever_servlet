@@ -27,8 +27,8 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<InfoProductDto> getAllProducts() {
-        return daoProxy.getAllProducts().stream()
+    public List<InfoProductDto> getAllProducts(int pageSize, int pageNumber) {
+        return daoProxy.getAllProducts(pageSize, pageNumber).stream()
                 .map(productMapper::toInfoProductDto)
                 .toList();
     }

@@ -1,10 +1,8 @@
 package clevertec.cache.impl;
 
 import clevertec.cache.Cache;
-import clevertec.config.ConfigurationLoader;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,7 +27,7 @@ public class LruCache<K, V> implements Cache<K, V> {
      *
      * @param capacity максимальное количество элементов, которое может хранить кэш
      */
-    public LruCache(int capacity){
+    public LruCache(int capacity) {
         this.capacity = capacity;
         this.map = new HashMap<>();
         this.linkedList = new LinkedList<>();
