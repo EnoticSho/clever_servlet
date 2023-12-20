@@ -90,7 +90,11 @@ public class ProductDaoImpl implements ProductDao {
     public Product save(Product product) {
         try (Connection connection = DatabaseConnectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(SAVE_QUERY)) {
-            fillPreparedStatement(preparedStatement, product, false);
+            preparedStatement.setObject(1, product.getId());
+            preparedStatement.setString(2, product.getName());
+            preparedStatement.setDouble(3, product.getPrice());
+            preparedStatement.setDouble(4, product.getWeight());
+            preparedStatement.setTimestamp(5, Timestamp.valueOf(product.getCreated()));
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new DatabaseAccessException("Failed to save product", e);
@@ -108,7 +112,10 @@ public class ProductDaoImpl implements ProductDao {
     public Product update(Product product) {
         try (Connection connection = DatabaseConnectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_QUERY)) {
-            fillPreparedStatement(preparedStatement, product, true);
+            preparedStatement.setString(1, product.getName());
+            preparedStatement.setDouble(2, product.getPrice());
+            preparedStatement.setDouble(3, product.getWeight());
+            preparedStatement.setTimestamp(4, Timestamp.valueOf(product.getCreated()));
             preparedStatement.setObject(5, product.getId());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -144,19 +151,5 @@ public class ProductDaoImpl implements ProductDao {
                 .weight(resultSet.getDouble("weight"))
                 .created(resultSet.getTimestamp("creation_date").toLocalDateTime())
                 .build();
-    }
-
-    private void fillPreparedStatement(PreparedStatement preparedStatement, Product product, boolean isUpdate) throws SQLException {
-        preparedStatement.setString(1, product.getName());
-        preparedStatement.setDouble(2, product.getPrice());
-        preparedStatement.setDouble(3, product.getWeight());
-        preparedStatement.setTimestamp(4, Timestamp.valueOf(product.getCreated()));
-
-        if (isUpdate) {
-            preparedStatement.setObject(5, product.getId());
-        } else {
-            preparedStatement.setObject(5, Timestamp.valueOf(product.getCreated()));
-            preparedStatement.setObject(1, product.getId());
-        }
     }
 }

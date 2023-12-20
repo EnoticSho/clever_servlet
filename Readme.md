@@ -1,7 +1,8 @@
-# Cache and Db
+# Servlet with db
 
 ## Описание
 Этот проект - Java-приложение, использующее Gradle, совместимое с Java 17. Оно реализует паттерны LRU и LFU для кэширования.
+Использует сервлеты для работы с сервисом.
 
 ## Особенности
 - **Кэширование**: Поддержка алгоритмов LRU и LFU.
@@ -15,4 +16,11 @@
 - **PDF конвертация**: PdfSerializer класс для сериализации объектов в pdf и пдф сохраняется в корневую папку pdf
 
 ## Установка и запуск
-    Запустите Docker, используя команду docker-compose up. Это создаст базу данных, а также выполнит создание таблиц и вставку начальных значений.
+    Запустите Docker, используя команду docker-compose up. Это создаст базу данных и tomcat сервер.
+    Далее используйте запросы для получения информации: 
+    - (GET) http://localhost:8080/myapp/products?pageSize=5&pageNumber=1 получение списка продуктов.
+    - (GET) http://localhost:8080/myapp/products/{uuid} получение продукта по uuid
+    - (DELETE) http://localhost:8080/myapp/products/dcce95ba-46ea-4739-887b-1de051755ac7 удаление продукта
+    - (POST) http://localhost:8080/myapp/products создание продукта
+    - (PUT) http://localhost:8080/myapp/products обновление продукта
+    - (GET) http://localhost:8080/myapp/pdf/{uuid} создание пдф продукта
