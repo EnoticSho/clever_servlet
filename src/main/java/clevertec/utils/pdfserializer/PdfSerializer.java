@@ -6,6 +6,7 @@ import com.itextpdf.text.Element;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.ColumnText;
 import com.itextpdf.text.pdf.PdfWriter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,12 +16,13 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+@Slf4j
 public class PdfSerializer {
 
     public Path serializeObjectToPdf(Object classObject) {
         String simpleName = classObject.getClass().getSimpleName();
         Document document = new Document();
-        String pdfFilePath = createPdfFilePath(classObject.getClass().getSimpleName());
+        String pdfFilePath = createPdfFilePath(simpleName);
 
         try {
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(pdfFilePath));
@@ -29,11 +31,15 @@ public class PdfSerializer {
             addTitle(document, simpleName);
             addClassFieldsToPdf(writer, classObject);
         } catch (DocumentException | FileNotFoundException e) {
-            e.printStackTrace();
+            log.error("Error while creating PDF: " + e.getMessage(), e);
+            throw new RuntimeException("Error while creating PDF", e);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+            log.error("Illegal access: " + e.getMessage(), e);
+            throw new RuntimeException("Error accessing fields", e);
         } finally {
-            document.close();
+            if (document.isOpen()) {
+                document.close();
+            }
         }
         return Path.of(pdfFilePath);
     }

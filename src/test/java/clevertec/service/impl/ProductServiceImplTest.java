@@ -1,4 +1,4 @@
-package clevertec.service;
+package clevertec.service.impl;
 
 import clevertec.data.ProductTestData;
 import clevertec.dto.InfoProductDto;

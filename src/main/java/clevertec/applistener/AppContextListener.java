@@ -5,6 +5,8 @@ import clevertec.config.ConfigurationLoader;
 import clevertec.dao.ProductDao;
 import clevertec.dao.impl.ProductDaoImpl;
 import clevertec.dbConnection.DatabaseConnectionManager;
+import clevertec.fliter.EncodingFilter;
+import clevertec.fliter.ErrorHandlingFilter;
 import clevertec.mapper.ProductMapperImpl;
 import clevertec.proxy.DaoProxyImpl;
 import clevertec.service.PdfService;
@@ -21,6 +23,7 @@ import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -52,10 +55,14 @@ public class AppContextListener implements ServletContextListener {
     public void contextInitialized(ServletContextEvent sce) {
         ServletContext ctx = sce.getServletContext();
 
-        // Инициализация сервисов и компонентов
+        FilterRegistration.Dynamic encodingFilter = ctx.addFilter("EncodingFilter", new EncodingFilter());
+        encodingFilter.addMappingForUrlPatterns(null, false, "/*");
+
+        FilterRegistration.Dynamic errorHandlingFilter = ctx.addFilter("ErrorHandlingFilter", new ErrorHandlingFilter());
+        errorHandlingFilter.addMappingForUrlPatterns(null, false, "/*");
+
         initServices(ctx);
 
-        // Инициализация Liquibase
         liquibaseInit();
     }
 

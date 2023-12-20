@@ -2,7 +2,6 @@ package clevertec.servlet;
 
 import clevertec.dto.InfoProductDto;
 import clevertec.dto.ProductDto;
-import clevertec.exception.ProductNotFoundException;
 import clevertec.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -38,53 +37,37 @@ public class ProductServlet extends HttpServlet {
             handleListProductsRequest(req, resp);
         }
         else {
-            handleSingleProductRequest(req, resp, pathInfo);
+            handleSingleProductRequest(resp, pathInfo);
         }
     }
 
-    private void handleSingleProductRequest(HttpServletRequest req, HttpServletResponse resp, String pathInfo) throws IOException {
-        try {
-            UUID productId = UUID.fromString(pathInfo.substring(1));
-            InfoProductDto product = productService.get(productId);
-            String jsonResponse = objectMapper.writeValueAsString(product);
-            try (PrintWriter writer = resp.getWriter()) {
-                writer.write(jsonResponse);
-                resp.setStatus(HttpServletResponse.SC_OK);
-            }
-        } catch (ProductNotFoundException e) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
-        } catch (IllegalArgumentException e) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid product ID format.");
-        }
+    private void handleSingleProductRequest(HttpServletResponse resp,
+                                            String pathInfo) throws IOException {
+        UUID productId = UUID.fromString(pathInfo.substring(1));
+        InfoProductDto product = productService.get(productId);
+        String jsonResponse = objectMapper.writeValueAsString(product);
+
+        writeResponse(resp, jsonResponse, HttpServletResponse.SC_OK);
     }
 
     private void handleListProductsRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        try {
-            String pageSizeParam = req.getParameter("pageSize");
-            String pageNumberParam = req.getParameter("pageNumber");
+        String pageSizeParam = req.getParameter("pageSize");
+        String pageNumberParam = req.getParameter("pageNumber");
 
-            int pageSize = pageSizeParam != null ? Integer.parseInt(pageSizeParam) : 20;
-            int pageNumber = pageNumberParam != null ? Integer.parseInt(pageNumberParam) : 1;
+        int pageSize = pageSizeParam != null ? Integer.parseInt(pageSizeParam) : 20;
+        int pageNumber = pageNumberParam != null ? Integer.parseInt(pageNumberParam) : 1;
 
-            List<InfoProductDto> products = productService.getAllProducts(pageSize, pageNumber);
-            String jsonResponse = objectMapper.writeValueAsString(products);
+        List<InfoProductDto> products = productService.getAllProducts(pageSize, pageNumber);
+        String jsonResponse = objectMapper.writeValueAsString(products);
 
-            writeResponse(resp, jsonResponse, HttpServletResponse.SC_OK);
-        } catch (Exception e) {
-            log.error("Error in listing products: ", e);
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error in listing products.");
-        }
+        writeResponse(resp, jsonResponse, HttpServletResponse.SC_OK);
     }
 
 
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        try {
-            ProductDto productDto = objectMapper.readValue(req.getReader(), ProductDto.class);
-            UUID productId = productService.create(productDto);
-            writeResponse(resp, productId, HttpServletResponse.SC_CREATED);
-        } catch (Exception e) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-        }
+        ProductDto productDto = objectMapper.readValue(req.getReader(), ProductDto.class);
+        UUID productId = productService.create(productDto);
+        writeResponse(resp, productId, HttpServletResponse.SC_CREATED);
     }
 
     @Override
@@ -96,16 +79,11 @@ public class ProductServlet extends HttpServlet {
             return;
         }
 
-        try {
-            UUID productId = UUID.fromString(pathInfo.substring(1));
-            ProductDto productDto = objectMapper.readValue(req.getReader(), ProductDto.class);
-            UUID update = productService.update(productId, productDto);
-            writeResponse(resp, update.toString(), HttpServletResponse.SC_OK);
-        } catch (ProductNotFoundException e) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
-        } catch (IllegalArgumentException e) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid product ID format.");
-        }
+        UUID productId = UUID.fromString(pathInfo.substring(1));
+        ProductDto productDto = objectMapper.readValue(req.getReader(), ProductDto.class);
+        UUID update = productService.update(productId, productDto);
+
+        writeResponse(resp, update.toString(), HttpServletResponse.SC_OK);
     }
 
     @Override
@@ -117,15 +95,10 @@ public class ProductServlet extends HttpServlet {
             return;
         }
 
-        try {
-            UUID productId = UUID.fromString(pathInfo.substring(1));
-            productService.delete(productId);
-            resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
-        } catch (ProductNotFoundException e) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
-        } catch (IllegalArgumentException e) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid product ID format.");
-        }
+        UUID productId = UUID.fromString(pathInfo.substring(1));
+        productService.delete(productId);
+
+        resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
     }
 
     private void writeResponse(HttpServletResponse resp, Object object, int statusCode) throws IOException {
