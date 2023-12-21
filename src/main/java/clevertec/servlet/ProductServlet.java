@@ -45,9 +45,8 @@ public class ProductServlet extends HttpServlet {
                                             String pathInfo) throws IOException {
         UUID productId = UUID.fromString(pathInfo.substring(1));
         InfoProductDto product = productService.get(productId);
-        String jsonResponse = objectMapper.writeValueAsString(product);
 
-        writeResponse(resp, jsonResponse, HttpServletResponse.SC_OK);
+        writeResponse(resp, product, HttpServletResponse.SC_OK);
     }
 
     private void handleListProductsRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -58,12 +57,10 @@ public class ProductServlet extends HttpServlet {
         int pageNumber = pageNumberParam != null ? Integer.parseInt(pageNumberParam) : 1;
 
         List<InfoProductDto> products = productService.getAllProducts(pageSize, pageNumber);
-        String jsonResponse = objectMapper.writeValueAsString(products);
-
-        writeResponse(resp, jsonResponse, HttpServletResponse.SC_OK);
+        writeResponse(resp, products, HttpServletResponse.SC_OK);
     }
 
-
+    @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         ProductDto productDto = objectMapper.readValue(req.getReader(), ProductDto.class);
         UUID productId = productService.create(productDto);
