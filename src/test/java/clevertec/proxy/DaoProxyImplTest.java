@@ -4,14 +4,12 @@ import clevertec.cache.Cache;
 import clevertec.dao.ProductDao;
 import clevertec.data.ProductTestData;
 import clevertec.entity.Product;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -21,7 +19,6 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -90,11 +87,11 @@ public class DaoProxyImplTest {
                         .build()
                         .buildProduct()
         );
-        when(productDao.findALL())
+        when(productDao.findAll(10, 1))
                 .thenReturn(expectedProducts);
 
         // When
-        List<Product> actualProducts = daoProxy.getAllProducts();
+        List<Product> actualProducts = daoProxy.getAllProducts(10, 1);
 
         // Then
         assertEquals(expectedProducts, actualProducts);
@@ -103,11 +100,11 @@ public class DaoProxyImplTest {
     @Test
     void ShouldReturnEmptyListWhenNoProductsAreAvailable() {
         // Given
-        when(productDao.findALL())
+        when(productDao.findAll(10, 1))
                 .thenReturn(Collections.emptyList());
 
         // When
-        List<Product> actualProducts = daoProxy.getAllProducts();
+        List<Product> actualProducts = daoProxy.getAllProducts(10, 1);
 
         // Then
         assertTrue(actualProducts.isEmpty());
@@ -123,7 +120,7 @@ public class DaoProxyImplTest {
                 .thenReturn(product);
 
         // When
-        Product savedProduct = daoProxy.saveProduct(product);
+        Product savedProduct = daoProxy.save(product);
 
         // Then
         verify(cache)

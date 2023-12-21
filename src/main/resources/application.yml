@@ -1,7 +1,9 @@
-db :
+db:
   dbUsername: root
   dbPassword: root
-  dbUrl: jdbc:postgresql://localhost:5432/database
-cache :
+  dbUrl: jdbc:postgresql://postgres:5432/database
+  initialize-db: true
+  sql-path: liquibase/db-changelog.sql
+cache:
   capacity: 5
   type: lfu

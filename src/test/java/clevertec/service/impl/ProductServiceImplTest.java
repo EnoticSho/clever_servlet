@@ -1,4 +1,4 @@
-package clevertec.service;
+package clevertec.service.impl;
 
 import clevertec.data.ProductTestData;
 import clevertec.dto.InfoProductDto;
@@ -71,19 +71,19 @@ public class ProductServiceImplTest {
         List<Product> products = Collections.singletonList(product);
         List<InfoProductDto> expected = Collections.singletonList(infoProductDto);
 
-        when(daoProxy.getAllProducts())
+        when(daoProxy.getAllProducts(10, 1))
                 .thenReturn(products);
 
         when(productMapper.toInfoProductDto(product))
                 .thenReturn(infoProductDto);
 
         //When
-        List<InfoProductDto> result = productService.getAllProducts();
+        List<InfoProductDto> result = productService.getAllProducts(10, 1);
 
         //Then
         assertEquals(expected, result);
         verify(daoProxy)
-                .getAllProducts();
+                .getAllProducts(10, 1);
         verify(productMapper)
                 .toInfoProductDto(product);
     }
@@ -91,14 +91,15 @@ public class ProductServiceImplTest {
     @Test
     public void shouldReturnEmptyListWhenNoProductsExist() {
         // Given
-        when(daoProxy.getAllProducts()).thenReturn(Collections.emptyList());
+        when(daoProxy.getAllProducts(10, 1))
+                .thenReturn(Collections.emptyList());
 
         // When
-        List<InfoProductDto> result = productService.getAllProducts();
+        List<InfoProductDto> result = productService.getAllProducts(10, 1);
 
         // Then
         verify(daoProxy)
-                .getAllProducts();
+                .getAllProducts(10, 1);
         assertTrue(result.isEmpty());
     }
 
@@ -114,7 +115,7 @@ public class ProductServiceImplTest {
         when(productMapper.toProduct(productDto))
                 .thenReturn(product);
 
-        when(daoProxy.saveProduct(product))
+        when(daoProxy.save(product))
                 .thenReturn(product);
 
         //When
@@ -125,7 +126,7 @@ public class ProductServiceImplTest {
         verify(productMapper)
                 .toProduct(productDto);
         verify(daoProxy)
-                .saveProduct(product);
+                .save(product);
     }
 
     @Test

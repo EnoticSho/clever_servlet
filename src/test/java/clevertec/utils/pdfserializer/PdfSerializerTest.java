@@ -8,10 +8,12 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PdfSerializerTest {
 
@@ -35,12 +37,16 @@ class PdfSerializerTest {
 
     @Test
     void testSerializeObjectToPdf_CreatesFile() {
+        // Given
         InfoProductDto infoProductDto = ProductTestData.builder()
                 .build()
                 .buildInfoProductDto();
-        pdfSerializer.serializeObjectToPdf(infoProductDto);
+        Path expected = Path.of(testFilePath);
 
-        File createdFile = new File(testFilePath);
-        assertTrue(createdFile.exists());
+        // When
+        Path actual = pdfSerializer.serializeObjectToPdf(infoProductDto);
+
+        // Then
+        assertEquals(expected, actual);
     }
 }
